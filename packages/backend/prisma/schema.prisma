@@ -17,16 +17,4 @@ model User {
   password      String
   accessToken   String?
   refreshToken  String?
-  posts Post[]
-}
-
-model Post {
-  id        Int      @default(autoincrement()) @id
-  title     String
-  content   String?
-  published Boolean? @default(false)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
