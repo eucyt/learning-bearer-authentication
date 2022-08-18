@@ -2,7 +2,7 @@ import {Injectable, UnauthorizedException} from '@nestjs/common';
 import {User} from '@prisma/client';
 import {PrismaService} from "@src/prisma/prisma.service";
 import {compareSync, hashSync} from 'bcrypt';
-import {MyJwtService} from "@src/auth/my-jwt.service";
+import {JwtService} from "@nestjs/jwt";
 
 interface JwtPayload {
   id: number;
@@ -11,19 +11,20 @@ interface JwtPayload {
 
 @Injectable()
 export class AuthService {
-  constructor(private prismaService: PrismaService, private myJwtService: MyJwtService) {
+  constructor(private prismaService: PrismaService, private jwtService: JwtService) {
   }
 
 
   async login(email: string, password: string): Promise<{ accessToken: string, refreshToken: string }> {
     const user = await this.validateUser(email, password)
+    // const user = await this.prismaService.user.findUnique({where: {email}})
     const payload: JwtPayload = {id: user.id, name: user.name};
 
-    const accessToken = this.myJwtService.sign(payload, {
+    const accessToken = this.jwtService.sign(payload, {
       expiresIn: '15m',
     });
 
-    const refreshToken = this.myJwtService.sign(payload, {
+    const refreshToken = this.jwtService.sign(payload, {
       expiresIn: '7d',
     });
 
@@ -41,8 +42,12 @@ export class AuthService {
   }
 
 
-  private async validateUser(email: string, password: string): Promise<User> {
-    const user: User | null = await this.prismaService.user.findUnique({where: {email}})
+  async validateUser(email: string, password: string): Promise<User> {
+    const user: User | null = await this.prismaService.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
     if (user && compareSync(password, user.password)) {
       return user
     } else {
