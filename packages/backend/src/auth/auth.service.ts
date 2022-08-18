@@ -14,16 +14,9 @@ export class AuthService {
   constructor(private prismaService: PrismaService, private myJwtService: MyJwtService) {
   }
 
-  async validateUser(email: string, password: string): Promise<User> {
-    const user: User | null = await this.prismaService.user.findUnique({where: {email}})
-    if (user && compareSync(password, user.password)) {
-      return user
-    } else {
-      throw new UnauthorizedException('Email or password is invalid.')
-    }
-  }
 
-  async login(user: User): Promise<{ accessToken: string, refreshToken: string }> {
+  async login(email: string, password: string): Promise<{ accessToken: string, refreshToken: string }> {
+    const user = await this.validateUser(email, password)
     const payload: JwtPayload = {id: user.id, name: user.name};
 
     const accessToken = this.myJwtService.sign(payload, {
@@ -45,5 +38,15 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+
+  private async validateUser(email: string, password: string): Promise<User> {
+    const user: User | null = await this.prismaService.user.findUnique({where: {email}})
+    if (user && compareSync(password, user.password)) {
+      return user
+    } else {
+      throw new UnauthorizedException('Email or password is invalid.')
+    }
   }
 }
