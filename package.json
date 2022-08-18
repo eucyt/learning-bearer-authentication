@@ -1,0 +1,17 @@
+{
+  "name": "learning-bearer-authentication",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:yoshihiko99/learning-bearer-authentication.git",
+  "author": "yuta <eypc.ofun@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/**"
+  ],
+  "scripts": {
+    "backend": "yarn workspace backend",
+    "frontend": "yarn workspace frontend",
+    "build": "docker-compose up -d & cp packages/backend/.env.dev packages/backend/.env & yarn backend build"
+  }
+}
